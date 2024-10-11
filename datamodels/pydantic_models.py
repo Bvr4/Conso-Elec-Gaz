@@ -3,9 +3,11 @@
 from pydantic import BaseModel, Field, field_validator
 
 
-class Consuption(BaseModel):
+class Consumption(BaseModel):
+    """Pydantic Model for consumptions"""
+    
     provider: str = Field(..., description="Energy provider")
-    year: int = Field(..., description="Year of consuption")
+    year: int = Field(..., description="Year of consumption")
     sector: str = Field(..., description="Type of energy")
     agri_cons: float = Field(..., description="Consumption attributed to agriculture")
     agri_pos_count: int = Field(..., description="number of agricultural points of supply")
@@ -21,7 +23,7 @@ class Consuption(BaseModel):
     departement_name: str = Field(..., description="Department name")
     region_code: int = Field(..., description="Region code")
     region_name: str = Field(..., description="Region name")
-    total_cons: float = Field(..., description="Total consuption")
+    total_cons: float = Field(..., description="Total consumption")
 
     @field_validator("agri_cons", "indus_cons", "terc_cons", "resid_cons", "other_cons", "total_cons")
     def check_value_positive(cls, v):

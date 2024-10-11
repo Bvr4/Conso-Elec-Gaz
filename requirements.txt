@@ -5,3 +5,4 @@ jupyterlab
 notebook
 pydantic
 sqlalchemy
+sqlalchemy_guid
