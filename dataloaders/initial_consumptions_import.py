@@ -17,12 +17,4 @@ def initial_consumptions_import() -> None:
     # Get consumptions dataset. See https://www.data.gouv.fr/fr/datasets/consommation-annuelle-delectricite-et-gaz-par-departement-et-par-secteur-dactivite/ for more informations
     df = get_df_from_csv("https://www.data.gouv.fr/fr/datasets/r/e455db41-28c2-419d-bdf1-d44635fdc97e")
 
-    print(df.head())
-
-    # Triming the dataframe so it's not too heavy. For tests purpose.
-    df = df[df['annee']>2019]
-    df = df[df['code_region']==28]
-
-    print (df.head())
-
-    import_consumption_df_to_db(session=session, df=df)
+    import_consumption_df_to_db(session=session, df=df, since_year=2020)

@@ -1,5 +1,6 @@
 """Importation functions."""
 
+from typing import Optional
 import requests
 import os
 import shutil
@@ -22,8 +23,37 @@ def get_df_from_csv(url: str) -> pd.DataFrame:
     return df
 
 
-def import_consumption_df_to_db(session: Session, df: pd.DataFrame) -> None:
+def import_consumption_df_to_db(session: Session, df: pd.DataFrame, since_year: Optional[int] = None) -> None:
     """Import consumption dataframe to the database, performing pydantic validations"""
+
+    # Sometimes, the column names changes, so we have to convert them
+    corresp = {
+        "Opérateur" : "operateur",
+        "Année" : "annee",
+        "Filière" : "filiere",
+        "Consommation Agriculture (MWh)" : "consoa",
+        "Nombre de points Agriculture" : "pdla",
+        "Consommation Industrie (MWh)" : "consoi",
+        "Nombre de points Industrie" : "pdli",
+        "Consommation Tertiaire  (MWh)" : "consot",
+        "Nombre de points Tertiaire" : "pdlt",
+        "Consommation Résidentiel  (MWh)" : "consor",
+        "Nombre de points Résidentiel" : "pdlr",
+        "Consommation Secteur Inconnu (MWh)" : "consona",
+        "Nombre de points Secteur Inconnu" : "pdlna",
+        "Code Département" : "code_departement",
+        "Libellé Département" : "libelle_departement",
+        "Code Région" : "code_region",
+        "Libellé Région" : "libelle_region",
+        "Consommation totale (MWh)" : "consototale",
+    }
+
+    if df.columns[0] == "Opérateur":
+        df.rename(columns=corresp, inplace=True)
+
+    # We filter the dataframe if since_year is given
+    if since_year is not None:
+        df = df[df['annee']>=since_year]
 
     for _, row in df.iterrows():
         try:
@@ -50,10 +80,11 @@ def import_consumption_df_to_db(session: Session, df: pd.DataFrame) -> None:
 
             consumption = ConsumptionSQL(**validated_cons_data.model_dump())
             session.add(consumption)
-            session.commit()
 
         except ValueError as e:
             print(f"Validation error: {e}")
+
+        session.commit()
 
 
 def get_geodf_from_ziped_shape(url: str) -> gpd.GeoDataFrame:
@@ -94,11 +125,4 @@ def import_department_gdf_to_db(session: Session, gdf: gpd.GeoDataFrame) -> None
 
         session.add(departments)
 
-        # session.execute(
-        # text("""
-        #     INSERT INTO departments (insee, name, nuts3, geom) 
-        #     VALUES (:insee, :name, :nuts3, ST_GeomFromText(:geom, 4326))
-        #     """),
-        #     {"insee": row["code_insee"], "name": row["nom"], "nuts3": row["nuts3"], "geom": row["geometry"]}
-        # )
-        session.commit()
+    session.commit()
