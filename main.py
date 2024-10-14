@@ -5,6 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from dataloaders.initial_consumptions_import import initial_consumptions_import
+from dataloaders.initial_department_geom_import import initial_dept_geom_import
 
 # df_conso_dep = pd.read_csv('datas/conso-elec-gaz-annuelle-par-secteur-dactivite-agregee-departement.csv', sep=";")
 
@@ -15,4 +16,5 @@ from dataloaders.initial_consumptions_import import initial_consumptions_import
 # df_conso_dep = df_conso_dep.reset_index()
 
 
-initial_consumptions_import()
+# initial_consumptions_import()
+initial_dept_geom_import()

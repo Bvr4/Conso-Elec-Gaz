@@ -1,16 +1,20 @@
 """Importation functions."""
 
-import pandas as pd
 import requests
+import os
+import shutil
 from io import StringIO
+import pandas as pd
+import geopandas as gpd
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 from datamodels.pydantic_models import Consumption
-from datamodels.sql_models import ConsumptionSQL
+from datamodels.sql_models import ConsumptionSQL, DepartmentSQL
 
 
 def get_df_from_csv(url: str) -> pd.DataFrame:
-    """Get dataframe from distant CSV."""
+    """Get DataFrame from distant CSV."""
 
     response = requests.get(url)
     data = StringIO(response.text)
@@ -50,3 +54,51 @@ def import_consumption_df_to_db(session: Session, df: pd.DataFrame) -> None:
 
         except ValueError as e:
             print(f"Validation error: {e}")
+
+
+def get_geodf_from_ziped_shape(url: str) -> gpd.GeoDataFrame:
+    """Get GeoDataFrame from distant ziped shape file"""
+
+    extract_to = "temp_geom_file"
+    zip_path = os.path.join(extract_to, 'data.zip')
+
+    if not os.path.exists(extract_to):
+        os.makedirs(extract_to)
+        
+    response = requests.get(url)
+
+    # Save the zip file
+    with open(zip_path, 'wb') as file:
+        file.write(response.content)
+
+    gdf = gpd.read_file(zip_path)
+
+    # deleting temp files
+    shutil.rmtree(extract_to)
+
+    return gdf
+
+
+def import_department_gdf_to_db(session: Session, gdf: gpd.GeoDataFrame) -> None:
+    """Import department geometry to the database"""
+
+    gdf['geometry'] = gdf.geometry.apply(lambda x: x.wkt)
+    
+    for _, row in gdf.iterrows():
+        departments = DepartmentSQL(
+            insee=row["code_insee"],
+            name=row["nom"],
+            nuts3=row["nuts3"],
+            geom=row["geometry"],
+        )
+
+        session.add(departments)
+
+        # session.execute(
+        # text("""
+        #     INSERT INTO departments (insee, name, nuts3, geom) 
+        #     VALUES (:insee, :name, :nuts3, ST_GeomFromText(:geom, 4326))
+        #     """),
+        #     {"insee": row["code_insee"], "name": row["nom"], "nuts3": row["nuts3"], "geom": row["geometry"]}
+        # )
+        session.commit()

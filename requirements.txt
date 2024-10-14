@@ -1,8 +1,9 @@
-numpy
-pandas
-matplotlib
-jupyterlab
-notebook
-pydantic
-sqlalchemy
-sqlalchemy_guid
+GeoAlchemy2==0.15.2
+geopandas==0.13.2
+matplotlib==3.7.4
+numpy==1.24.4
+pandas==2.0.3
+pydantic==2.9.2
+Requests==2.32.3
+SQLAlchemy==2.0.35
+sqlalchemy_guid==1.0.2

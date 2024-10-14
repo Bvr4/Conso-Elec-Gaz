@@ -4,7 +4,7 @@ from datamodels.import_datas import get_df_from_csv, import_consumption_df_to_db
 
 
 def initial_consumptions_import() -> None:
-    """Initial consumption import. Load datas from the source and store them in the database. Erases previous datas."""
+    """Initial consumption import. Loads datas from the source and store them in the database. Erases previous datas."""
 
     # Connect to the database
     con = DatabaseConnection()
@@ -14,13 +14,14 @@ def initial_consumptions_import() -> None:
     session.query(ConsumptionSQL).delete()
     session.commit()
 
+    # Get consumptions dataset. See https://www.data.gouv.fr/fr/datasets/consommation-annuelle-delectricite-et-gaz-par-departement-et-par-secteur-dactivite/ for more informations
     df = get_df_from_csv("https://www.data.gouv.fr/fr/datasets/r/e455db41-28c2-419d-bdf1-d44635fdc97e")
-    
+
     print(df.head())
 
     # Triming the dataframe so it's not too heavy. For tests purpose.
     df = df[df['annee']>2019]
-    df = df[df['code_region']=="28"]
+    df = df[df['code_region']==28]
 
     print (df.head())
 

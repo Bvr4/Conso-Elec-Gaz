@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 import sqlalchemy as sa
 from sqlalchemy.orm import declarative_base
 from sqlalchemy_guid import GUID
+from geoalchemy2 import Geometry
 
 
 Base = declarative_base()
@@ -40,3 +41,14 @@ class ConsumptionSQL(Base, CreatedMixin):
     region_code = sa.Column(sa.Integer, index=True, comment="Region code")
     region_name = sa.Column(sa.String(255), index=True, comment="Region name")
     total_cons = sa.Column(sa.Float, comment="Total consuption")
+
+
+class DepartmentSQL(Base):
+    """Class representing the departments geometries."""
+
+    __tablename__ = "departments"
+
+    insee = sa.Column(sa.String(3), primary_key=True, index=True, comment="Department INSEE code")
+    name = sa.Column(sa.String(255), comment="Department name")
+    nuts3 = sa.Column(sa.String(5), comment="European NUTS3 code for the department")
+    geom = sa.Column(Geometry(geometry_type='POLYGON', srid=4326), comment="Department geometry")
